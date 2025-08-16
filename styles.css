@@ -1,0 +1,16 @@
+body {
+  background-color: #f8f9fa;
+}
+#timetable {
+  table-layout: fixed;
+}
+#timetable th, #timetable td {
+  text-align: center;
+  vertical-align: middle;
+}
+.course-card {
+  background-color: #e9ecef;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 5px;
+}
