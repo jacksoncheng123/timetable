@@ -15,11 +15,31 @@ body {
   border-radius: 0 0 8px 8px;
 }
 .topbar h1{margin:0;font-size:1.25rem}
-.topbar nav button{margin-left:0.5rem;padding:0.6rem 1rem;border-radius:8px;border:0;background:rgba(255,255,255,0.12);color:white}
+.topbar nav button{margin-left:0.5rem;padding:0.6rem 1rem;border-radius:8px;border:0;background:rgba(255,255,255,0.12);color:white;cursor:pointer;transition:all 0.2s ease}
+
+.topbar nav button:hover {
+  background:rgba(255,255,255,0.2);
+  transform:translateY(-1px);
+}
+
+.topbar nav button:active {
+  transform:translateY(0);
+  background:rgba(255,255,255,0.25);
+}
 
 /* Export dropdown styles */
 .export-dropdown{position:relative;display:inline-block;margin-left:0.5rem}
-.dropdown-btn{padding:0.6rem 1rem;border-radius:8px;border:0;background:rgba(255,255,255,0.12);color:white;cursor:pointer}
+.dropdown-btn{padding:0.6rem 1rem;border-radius:8px;border:0;background:rgba(255,255,255,0.12);color:white;cursor:pointer;transition:all 0.2s ease}
+
+.dropdown-btn:hover {
+  background:rgba(255,255,255,0.2);
+  transform:translateY(-1px);
+}
+
+.dropdown-btn:active {
+  transform:translateY(0);
+  background:rgba(255,255,255,0.25);
+}
 .dropdown-content{display:none;position:absolute;top:100%;left:0;background:white;min-width:140px;box-shadow:0 4px 8px rgba(0,0,0,0.15);border-radius:8px;z-index:1000;overflow:hidden;margin-top:4px}
 .dropdown-content a{color:#2d3748;padding:0.75rem 1rem;text-decoration:none;display:block;transition:background-color 0.2s}
 .dropdown-content a:hover{background:#f7fafc}
@@ -405,11 +425,81 @@ body {
   .class-location { font-size: 0.6rem; }
 }
 
-@media (max-width:480px){
-  .topbar nav{display:flex;flex-wrap:wrap}
-  .topbar nav button{margin-top:0.4rem}
+/* Mobile-friendly navigation improvements */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0.75rem 1rem;
+  }
+  
+  .topbar nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .topbar nav button {
+    margin-left: 0;
+    margin-top: 0;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    min-height: 44px; /* Apple's recommended minimum touch target */
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  
+  .dropdown-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    min-height: 44px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  
+  .dropdown-content {
+    min-width: 160px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    border-radius: 12px;
+    margin-top: 8px;
+  }
+  
+  .dropdown-content a {
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  
+  .dropdown-content a:last-child {
+    border-bottom: none;
+  }
+  
+  .dropdown-content a:active {
+    background: #e2e8f0;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar{padding:1rem 0.75rem}
   .container{padding:0 0.5rem}
-  .topbar{padding:1rem}
+  
+  /* Stack navigation vertically on very small screens */
+  .topbar nav {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .topbar nav button,
+  .dropdown-btn {
+    flex: 1;
+    max-width: 120px;
+    padding: 0.8rem 0.5rem;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  
   .monthly-header{flex-direction:column;gap:1rem}
   .monthly-header h2{font-size:1.25rem}
   .calendar-day{min-height:80px;padding:0.25rem}
@@ -874,7 +964,7 @@ body {
   background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
   color: white;
   border-radius: 4px;
-  padding: 6px 8px;
+  padding: 6px 8px 3px 8px;
   font-size: 0.75em;
   line-height: 1.0;
   cursor: pointer;
@@ -887,6 +977,7 @@ body {
   color: #1f2937;
   animation: pulse 2s infinite;
   transform: scale(1.02);
+  padding: 6px 8px 1px 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   z-index: 20;
 }
@@ -1024,7 +1115,7 @@ body {
   
   .class-card.table-positioned {
     font-size: 0.85em;
-    padding: 5px 7px;
+    padding: 5px 7px 2px 7px;
   }
   
   .class-card.table-positioned .class-title {
@@ -1053,7 +1144,7 @@ body {
   
   .class-card.table-positioned {
     font-size: 0.8em;
-    padding: 3px 5px;
+    padding: 3px 5px 1px 5px;
   }
 }
 
