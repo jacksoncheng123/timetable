@@ -1158,7 +1158,7 @@ function render(){
       
       // Determine if this is the current class
       const isCurrent = current && current.item === item && 
-                        formatHKTDateString(current.day) === formatHKTDateString(getHKTDate())
+                        formatHKTDateString(current.day) === formatHKTDateString(checkDay)
       
       // Get the assigned track for this class
       const track = classTracks[classIndex]
