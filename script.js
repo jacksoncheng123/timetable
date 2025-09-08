@@ -1229,8 +1229,15 @@ function render(){
       
       // Position the class element
       // Height should span multiple cells if the class is longer than 1 hour
-      const cellHeight = 60; // Height of each table cell in pixels
-      const totalHeightPx = durationHours * cellHeight;
+      // Use responsive cell heights to match CSS
+      let cellHeight = 60; // Default desktop height
+      if (window.innerWidth <= 480) {
+        cellHeight = 45; // Small screens
+      } else if (window.innerWidth <= 768) {
+        cellHeight = 50; // Mobile screens
+      }
+      
+      const totalHeightPx = durationHours * cellHeight - 4; // Reduce by 4px to prevent overflow
       classElement.style.height = `${totalHeightPx}px`
       classElement.style.top = `${(startMin / 60) * cellHeight}px`
       
