@@ -3,114 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>University Timetable</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="theme-color" content="#2b6cb0">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <title>UniTimetable</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="/icons/icon-512.png">
 </head>
 <body>
-  <div class="container mt-5">
-    <h1 class="text-center mb-4">University Timetable</h1>
+  <div class="container">
+    <header class="topbar">
+      <h1>Timetable</h1>
+      <nav>
+        <button id="navHome">Home</button>
+        <button id="navMonthly">Monthly</button>
+        <button id="navAdd">Add Class</button>
+        <button id="exportBtn">Export JSON</button>
+        <button id="importBtn">Import JSON</button>
+        <button id="clearBtn">Clear</button>
+        <button id="unregisterSW">Refresh Cache</button>
+      </nav>
+    </header>
 
-    <!-- Add Course Form -->
-    <div class="card mb-4">
-      <div class="card-body">
-        <h3>Add Course</h3>
-        <form id="courseForm">
+    <main>
+      <section id="homeView">
+        <div class="status">
+          <div id="currentStatus" class="status-block">Current: —</div>
+          <div id="nextStatus" class="status-block">Next: —</div>
+        </div>
+
+        <h3 class="mt-4">Weekly Timetable (Mon–Sat)</h3>
+        <div id="timetable" class="timetable-grid"></div>
+      </section>
+
+      <section id="monthlyView" class="hidden">
+        <div class="monthly-header">
+          <button id="prevMonth" class="btn btn-secondary">&larr; Previous</button>
+          <h2 id="monthYear" class="mt-0 mb-0"></h2>
+          <button id="nextMonth" class="btn btn-secondary">Next &rarr;</button>
+        </div>
+        <div id="monthlyCalendar" class="monthly-calendar"></div>
+      </section>
+
+      <section id="addView" class="hidden">
+        <h2>Add / Edit Class</h2>
+        <form id="classForm">
+          <input type="hidden" id="editingIndex" value="">
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="courseName" class="form-label">Course Name</label>
-              <input type="text" class="form-control" id="courseName" required>
+              <label for="crn">Course CRN</label>
+              <input id="crn" class="form-control" type="text" required>
             </div>
             <div class="col-md-6 mb-3">
-              <label for="courseCode" class="form-label">Course Code</label>
-              <input type="text" class="form-control" id="courseCode" required>
+              <label for="title">Course Title</label>
+              <input id="title" class="form-control" type="text" required>
             </div>
           </div>
+
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="location" class="form-label">Location</label>
-              <input type="text" class="form-control" id="location" required>
+              <label for="profName">Professor Name</label>
+              <input id="profName" class="form-control" type="text">
             </div>
-            <div class="col-md-6 mb-3">
-              <label for="day" class="form-label">Day</label>
-              <select class="form-select" id="day" required>
-                <option value="" disabled selected>Select a day</option>
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
-              </select>
+            <div class="col-md-3 mb-3">
+              <label for="profEmail">Professor Email</label>
+              <input id="profEmail" class="form-control" type="email">
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="contactEmail">Contact Email</label>
+              <input id="contactEmail" class="form-control" type="email">
             </div>
           </div>
+
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="startTime" class="form-label">Start Time</label>
-              <input type="time" class="form-control" id="startTime" required>
+            <div class="col-md-4 mb-3">
+              <label for="location">Location</label>
+              <input id="location" class="form-control" type="text">
             </div>
-            <div class="col-md-6 mb-3">
-              <label for="endTime" class="form-label">End Time</label>
-              <input type="time" class="form-control" id="endTime" required>
+            <div class="col-md-4 mb-3">
+              <label for="startDate">Repeat Start</label>
+              <input id="startDate" class="form-control" type="date" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="endDate">Repeat Until</label>
+              <input id="endDate" class="form-control" type="date" required>
             </div>
           </div>
+
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input type="date" class="form-control" id="startDate" required>
+            <div class="col-md-3 mb-3">
+              <label for="startTime">Start Time</label>
+              <input id="startTime" class="form-control" type="time" required>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="endTime">End Time</label>
+              <input id="endTime" class="form-control" type="time" required>
             </div>
             <div class="col-md-6 mb-3">
-              <label for="endDate" class="form-label">End Date</label>
-              <input type="date" class="form-control" id="endDate" required>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="profName" class="form-label">Professor Name</label>
-              <input type="text" class="form-control" id="profName" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="profEmail" class="form-label">Professor Email</label>
-              <input type="email" class="form-control" id="profEmail" required>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="taName" class="form-label">TA Name</label>
-              <input type="text" class="form-control" id="taName">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="taEmail" class="form-label">TA Email</label>
-              <input type="email" class="form-control" id="taEmail">
+              <label>Repeat on weekdays</label>
+              <div id="weekdayCheckboxes" class="weekday-boxes">
+                <label><input type="checkbox" value="Monday"> Mon</label>
+                <label><input type="checkbox" value="Tuesday"> Tue</label>
+                <label><input type="checkbox" value="Wednesday"> Wed</label>
+                <label><input type="checkbox" value="Thursday"> Thu</label>
+                <label><input type="checkbox" value="Friday"> Fri</label>
+                <label><input type="checkbox" value="Saturday"> Sat</label>
+              </div>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">Add Course</button>
+
+          <div class="mb-3">
+            <label>Exception dates (optional)</label>
+            <div class="d-flex gap-2">
+              <input id="exceptionDate" class="form-control" type="date">
+              <button id="addException" type="button" class="btn btn-secondary">Add</button>
+            </div>
+            <ul id="exceptionsList" class="list-group mt-2"></ul>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button id="cancelAdd" type="button" class="btn btn-light">Cancel</button>
+          </div>
         </form>
-      </div>
-    </div>
+      </section>
 
-    <!-- Timetable -->
-    <h3>Weekly Timetable</h3>
-    <table class="table table-bordered" id="timetable">
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Monday</th>
-          <th>Tuesday</th>
-          <th>Wednesday</th>
-          <th>Thursday</th>
-          <th>Friday</th>
-          <th>Saturday</th>
-          <th>Sunday</th>
-        </tr>
-      </thead>
-      <tbody id="timetableBody"></tbody>
-    </table>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+    </main>
 
-    <!-- Course List -->
-    <h3>Registered Courses</h3>
-    <ul id="courseList" class="list-group"></ul>
+    
   </div>
 
   <script src="script.js"></script>
