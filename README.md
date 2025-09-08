@@ -1,6 +1,6 @@
-# Timetable (PWA)
+# UniTime (PWA)
 
-Lightweight Progressive Web App for managing a timetable. This build intentionally excludes AI and QR features.
+Lightweight Progressive Web App for managing your university timetable.
 
 Files added/changed:
 - `index.html` — main UI and PWA hooks
@@ -10,4 +10,3 @@ Files added/changed:
 - `sw.js` — service worker for offline
 - `icons/*` — placeholder icons
 
-# timetable
