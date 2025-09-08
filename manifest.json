@@ -2,7 +2,7 @@
   "name": "Timetable",
   "short_name": "Timetable",
   "start_url": "/index.html",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "#2b6cb0",
   "icons": [
