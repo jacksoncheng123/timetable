@@ -1077,8 +1077,76 @@ function render(){
       return true
     })
     
-    // Position each class in the appropriate table cells
-    dayClasses.forEach(item => {
+    // Sort classes by start time for proper overlap detection
+    const sortedDayClasses = dayClasses.sort((a, b) => {
+      const [aStartHour, aStartMin] = a.startTime.split(':').map(Number)
+      const [bStartHour, bStartMin] = b.startTime.split(':').map(Number)
+      const aStartMinutes = aStartHour * 60 + aStartMin
+      const bStartMinutes = bStartHour * 60 + bStartMin
+      
+      if (aStartMinutes !== bStartMinutes) {
+        return aStartMinutes - bStartMinutes
+      }
+      
+      // If start times are the same, sort by end time
+      const [aEndHour, aEndMin] = a.endTime.split(':').map(Number)
+      const [bEndHour, bEndMin] = b.endTime.split(':').map(Number)
+      return (aEndHour * 60 + aEndMin) - (bEndHour * 60 + bEndMin)
+    })
+    
+    // Create a map of time slots to detect overlapping classes
+    const timeSlotMap = []
+    
+    // First pass: determine track assignments without creating cards
+    const classTracks = []
+    sortedDayClasses.forEach((item, classIndex) => {
+      const [startHour, startMin] = item.startTime.split(':').map(Number)
+      const [endHour, endMin] = item.endTime.split(':').map(Number)
+      
+      // Calculate precise position to align with hour grid boxes
+      const startOffsetInMinutes = (startHour - earliestHour) * 60 + startMin
+      const endOffsetInMinutes = (endHour - earliestHour) * 60 + endMin
+      
+      // Find which track (horizontal position) this class should go in to avoid overlaps
+      let track = 0
+      let foundTrack = false
+      
+      while (!foundTrack) {
+        // Check if this track is free for the entire duration of the class
+        let trackFree = true
+        for (let min = startOffsetInMinutes; min < endOffsetInMinutes; min++) {
+          if (timeSlotMap[min] && timeSlotMap[min][track]) {
+            trackFree = false
+            break
+          }
+        }
+        
+        if (trackFree) {
+          foundTrack = true
+        } else {
+          track++;
+        }
+      }
+      
+      // Mark this track as occupied for the duration of the class
+      for (let min = startOffsetInMinutes; min < endOffsetInMinutes; min++) {
+        if (!timeSlotMap[min]) timeSlotMap[min] = {};
+        timeSlotMap[min][track] = true;
+      }
+      
+      // Store track assignment for this class
+      classTracks[classIndex] = track
+    })
+    
+    // Calculate the total number of tracks needed for this day
+    const totalTracks = Math.max(1, Object.keys(timeSlotMap.reduce((acc, slot) => {
+      if (!slot) return acc;
+      Object.keys(slot).forEach(t => acc[t] = true);
+      return acc;
+    }, {})).length);
+    
+    // Second pass: create the class cards with correct widths and positions
+    sortedDayClasses.forEach((item, classIndex) => {
       const [startHour, startMin] = item.startTime.split(':').map(Number)
       const [endHour, endMin] = item.endTime.split(':').map(Number)
       
@@ -1091,6 +1159,9 @@ function render(){
       // Determine if this is the current class
       const isCurrent = current && current.item === item && 
                         formatHKTDateString(current.day) === formatHKTDateString(getHKTDate())
+      
+      // Get the assigned track for this class
+      const track = classTracks[classIndex]
       
       // Create class element
       const classElement = document.createElement('div')
@@ -1105,6 +1176,20 @@ function render(){
       // Position the class element
       classElement.style.height = `${durationHours * 100}%`
       classElement.style.top = `${(startMin / 60) * 100}%`
+      
+      // Set width and left position based on total tracks and assigned track
+      if (totalTracks > 1) {
+        // Multiple overlapping classes - distribute them horizontally
+        const trackWidth = 100 / totalTracks;
+        classElement.style.width = `calc(${trackWidth}% - 2px)`;
+        classElement.style.left = `calc(${track * trackWidth}% + 1px)`;
+        classElement.style.right = 'auto';
+      } else {
+        // Single class - use default CSS (full width)
+        classElement.style.width = '';
+        classElement.style.left = '';
+        classElement.style.right = '';
+      }
       
       // Class content
       classElement.innerHTML = `
