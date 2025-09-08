@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Navigation
   const navHome = document.getElementById('navHome')
   const navMonthly = document.getElementById('navMonthly')
-  const navAdd = document.getElementById('navAdd')
+  const navAdd = document.getElementById('navAddFromSettings')
   
   if (navHome) {
     navHome.addEventListener('click', () => showView('home'))
@@ -460,7 +460,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   if (navAdd) {
-    navAdd.addEventListener('click', () => showView('add'))
+    navAdd.addEventListener('click', (e) => {
+      e.preventDefault()
+      showView('add')
+      document.querySelector('.export-dropdown').classList.remove('show')
+    })
   }
 
   // List view button
@@ -649,16 +653,17 @@ document.addEventListener('DOMContentLoaded', () => {
     render()
   })
 
-  // Export dropdown functionality
-  const exportBtn = document.getElementById('exportBtn')
-  const exportDropdown = document.getElementById('exportDropdown')
-  const exportJsonOption = document.getElementById('exportJsonOption')
-  const exportIcsOption = document.getElementById('exportIcsOption')
+  // Settings dropdown functionality
+  const settingsBtn = document.getElementById('settingsBtn')
+  const settingsDropdown = document.getElementById('settingsDropdown')
+  const exportJsonFromSettings = document.getElementById('exportJsonFromSettings')
+  const exportIcsFromSettings = document.getElementById('exportIcsFromSettings')
+  const importBtnFromSettings = document.getElementById('importBtnFromSettings')
   
   // Toggle dropdown on button click
-  exportBtn.addEventListener('click', (e) => {
+  settingsBtn.addEventListener('click', (e) => {
     e.stopPropagation()
-    const dropdown = exportBtn.parentElement
+    const dropdown = settingsBtn.parentElement
     dropdown.classList.toggle('show')
   })
   
@@ -671,30 +676,36 @@ document.addEventListener('DOMContentLoaded', () => {
   })
   
   // Export options
-  exportJsonOption.addEventListener('click', (e) => {
+  exportJsonFromSettings.addEventListener('click', (e) => {
     e.preventDefault()
     exportJSON()
     document.querySelector('.export-dropdown').classList.remove('show')
   })
   
-  exportIcsOption.addEventListener('click', (e) => {
+  exportIcsFromSettings.addEventListener('click', (e) => {
     e.preventDefault()
     exportToICS()
     document.querySelector('.export-dropdown').classList.remove('show')
   })
   
-  const importBtn = document.getElementById('importBtn')
+  // Import functionality
+  importBtnFromSettings.addEventListener('click', (e) => {
+    e.preventDefault()
+    console.log('Import button clicked from settings')
+    const importFile = document.getElementById('importFile')
+    if (importFile) {
+      importFile.click()
+    }
+    document.querySelector('.export-dropdown').classList.remove('show')
+  })
+  
+  // Import file handling
   const importFile = document.getElementById('importFile')
   
-  if (!importBtn || !importFile) {
-    console.error('Import elements not found')
+  if (!importFile) {
+    console.error('Import file element not found')
     return
   }
-  
-  importBtn.addEventListener('click', () => {
-    console.log('Import button clicked')
-    importFile.click()
-  })
   
   importFile.addEventListener('change', (e) => {
     const f = e.target.files[0]
@@ -915,15 +926,58 @@ function render(){
     return {...o, startM, endM}
   }).sort((a,b)=> a.day - b.day || a.startM - b.startM)
   
+  // Check for classes today and upcoming
+  let hasClassesToday = false
+  let nextToday = null
+  
   for (const o of occTimes){
     const startM = o.startM
-    if (formatHKTDateString(o.day) === formatHKTDateString(now) && startM <= nowTime && o.endM > nowTime) { current = o; break }
-    if (!next && o.day >= now && (o.day > now || o.startM > nowTime)) { next = o }
+    const isToday = formatHKTDateString(o.day) === formatHKTDateString(now)
+    
+    // Check if current class
+    if (isToday && startM <= nowTime && o.endM > nowTime) { 
+      current = o
+    }
+    
+    // Track if there are any classes today
+    if (isToday) {
+      hasClassesToday = true
+      // Find next class today
+      if (!nextToday && o.startM > nowTime) {
+        nextToday = o
+      }
+    }
+    
+    // Find next class overall (today or future)
+    if (!next && (o.day > now || (isToday && o.startM > nowTime))) { 
+      next = o 
+    }
   }
   
-  // Update status display
-  document.getElementById('currentStatus').textContent = current ? `Current: ${current.item.title} @ ${current.item.location} (${formatTimeRange(current.item.startTime,current.item.endTime)})` : 'Current: No class in progress'
-  document.getElementById('nextStatus').textContent = next ? `Next: ${next.item.title} @ ${next.item.location} on ${formatDate(next.day)} ${formatTimeRange(next.item.startTime,next.item.endTime)}` : 'Next: No upcoming classes'
+  // Update status display with enhanced messaging
+  if (current) {
+    document.getElementById('currentStatus').textContent = `Current: ${current.item.title} @ ${current.item.location} (${formatTimeRange(current.item.startTime,current.item.endTime)})`
+  } else {
+    document.getElementById('currentStatus').textContent = 'Current: No class in progress'
+  }
+  
+  // Enhanced next class logic
+  if (nextToday) {
+    // Show next class today (no date needed)
+    document.getElementById('nextStatus').textContent = `Next: ${nextToday.item.title} @ ${nextToday.item.location} (${formatTimeRange(nextToday.item.startTime,nextToday.item.endTime)})`
+  } else if (next) {
+    // Show next class from future days (with date)
+    document.getElementById('nextStatus').textContent = `Next: ${next.item.title} @ ${next.item.location} on ${formatDate(next.day)} ${formatTimeRange(next.item.startTime,next.item.endTime)}`
+  } else {
+    document.getElementById('nextStatus').textContent = 'Next: No upcoming classes'
+  }
+  
+  // Debug logging (temporary)
+  console.log('Debug - Occurrences:', occurrences.length)
+  console.log('Debug - Current:', current)
+  console.log('Debug - Next Today:', nextToday)
+  console.log('Debug - Next Overall:', next)
+  console.log('Debug - Has Classes Today:', hasClassesToday)
 
   // Update timetable controls header with current week
   const weekEnd = getHKTDate(weekStart)
@@ -1031,7 +1085,7 @@ function render(){
         const currentHour = now.getHours()
         if (h === currentHour) {
           const currentTimeIndicator = document.createElement('div')
-          currentTimeIndicator.className = 'current-time-line'
+          currentTimeIndicator.className = 'current-time-indicator'
           
           const currentMinutes = now.getMinutes()
           const position = (currentMinutes / 60) * 100
@@ -1174,8 +1228,11 @@ function render(){
       const durationHours = durationMinutes / 60
       
       // Position the class element
-      classElement.style.height = `${durationHours * 100}%`
-      classElement.style.top = `${(startMin / 60) * 100}%`
+      // Height should span multiple cells if the class is longer than 1 hour
+      const cellHeight = 60; // Height of each table cell in pixels
+      const totalHeightPx = durationHours * cellHeight;
+      classElement.style.height = `${totalHeightPx}px`
+      classElement.style.top = `${(startMin / 60) * cellHeight}px`
       
       // Set width and left position based on total tracks and assigned track
       if (totalTracks > 1) {
