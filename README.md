@@ -6,7 +6,7 @@ Files added/changed:
 - `index.html` — main UI and PWA hooks
 - `styles.css` — updated styles
 - `script.js` — app logic (add/edit/delete/import/export)
-- `manifest.webmanifest` — web app manifest
+- `manifest.json` — web app manifest
 - `sw.js` — service worker for offline
 - `icons/*` — placeholder icons
 
