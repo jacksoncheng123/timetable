@@ -551,4 +551,3 @@ End: ${item.endDate}
     }
   }
 }
-
