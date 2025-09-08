@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#2b6cb0">
-  <link rel="manifest" href="manifest.json">
-  <title>UniTimetable</title>
+  <link rel="manifest" href="/manifest.json">
+  <title>UniTime</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" type="image/png" href="/icons/icon-512.png">
 </head>
@@ -17,10 +17,15 @@
         <button id="navHome">Home</button>
         <button id="navMonthly">Monthly</button>
         <button id="navAdd">Add Class</button>
-        <button id="exportBtn">Export JSON</button>
+        <button id="navList">List All</button>
+        <div class="export-dropdown">
+          <button id="exportBtn" class="dropdown-btn">Export ▼</button>
+          <div id="exportDropdown" class="dropdown-content">
+            <a href="#" id="exportJsonOption">Export JSON</a>
+            <a href="#" id="exportIcsOption">Export ICS</a>
+          </div>
+        </div>
         <button id="importBtn">Import JSON</button>
-        <button id="clearBtn">Clear</button>
-        <button id="unregisterSW">Refresh Cache</button>
       </nav>
     </header>
 
@@ -31,7 +36,9 @@
           <div id="nextStatus" class="status-block">Next: —</div>
         </div>
 
-        <h3 class="mt-4">Weekly Timetable (Mon–Sat)</h3>
+        <div class="timetable-controls">
+          <h3>Weekly Timetable (Mon–Sat)</h3>
+        </div>
         <div id="timetable" class="timetable-grid"></div>
       </section>
 
@@ -39,9 +46,26 @@
         <div class="monthly-header">
           <button id="prevMonth" class="btn btn-secondary">&larr; Previous</button>
           <h2 id="monthYear" class="mt-0 mb-0"></h2>
+          <button id="todayMonth" class="btn btn-primary">Today</button>
           <button id="nextMonth" class="btn btn-secondary">Next &rarr;</button>
         </div>
         <div id="monthlyCalendar" class="monthly-calendar"></div>
+      </section>
+
+      <section id="detailView" class="hidden">
+        <h2>Class Details</h2>
+        <div id="classDetails" class="class-details"></div>
+        <div class="detail-actions">
+          <button id="editClassBtn" class="btn btn-primary">Edit Class</button>
+          <button id="deleteClassBtn" class="btn btn-danger">Delete Class</button>
+          <button id="closeDetailBtn" class="btn btn-secondary">Close</button>
+        </div>
+      </section>
+
+      <section id="listView" class="hidden">
+        <h2>All Classes</h2>
+        <div id="classList" class="class-list"></div>
+        <button id="closeListBtn" class="btn btn-secondary">Close</button>
       </section>
 
       <section id="addView" class="hidden">
@@ -120,6 +144,27 @@
             <ul id="exceptionsList" class="list-group mt-2"></ul>
           </div>
 
+          <!-- Group Information Section -->
+          <div class="group-section mb-4">
+            <h4 class="section-title">Group Information (Optional)</h4>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="groupName">Group Name</label>
+                <input id="groupName" class="form-control" type="text" placeholder="e.g., Study Group 1, Team Alpha">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label>Group Members</label>
+              <div class="d-flex gap-2 mb-2">
+                <input id="memberName" class="form-control" type="text" placeholder="Groupmate name">
+                <input id="memberContact" class="form-control" type="text" placeholder="Phone (+852 12345678) or IG (@username)">
+                <button id="addMember" type="button" class="btn btn-secondary">Add</button>
+              </div>
+              <div id="membersList" class="members-list"></div>
+            </div>
+          </div>
+
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Save</button>
             <button id="cancelAdd" type="button" class="btn btn-light">Cancel</button>
@@ -127,10 +172,30 @@
         </form>
       </section>
 
-      <input type="file" id="importFile" accept="application/json" style="display:none">
+      <input type="file" id="importFile" accept=".json,application/json,text/plain" style="display:none">
     </main>
 
     
+  </div>
+
+  <!-- Class Details Popup -->
+  <div id="classPopup" class="class-popup hidden">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3 id="popupTitle">Class Details</h3>
+        <button id="closePopup" class="close-btn">&times;</button>
+      </div>
+      <div id="popupDetails" class="popup-body"></div>
+      <div class="popup-actions">
+        <button id="popupViewDetails" class="btn btn-primary">View Full Details</button>
+      </div>
+    </div>
+    <div class="popup-overlay"></div>
+  </div>
+
+  <!-- Hover Tooltip -->
+  <div id="hoverTooltip" class="hover-tooltip hidden">
+    <div id="tooltipContent"></div>
   </div>
 
   <script src="script.js"></script>
