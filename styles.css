@@ -806,10 +806,24 @@ body {
   border-collapse: collapse;
   margin-top: 20px;
   table-layout: fixed;
+  display: table;
+}
+
+.timetable-table thead {
+  display: table-header-group;
+}
+
+.timetable-table tbody {
+  display: table-row-group;
+}
+
+.timetable-table tr {
+  display: table-row;
 }
 
 .timetable-table th, 
 .timetable-table td {
+  display: table-cell;
   border: 1px solid #ddd;
   padding: 0;
   vertical-align: top;
@@ -832,6 +846,8 @@ body {
   background-color: #e9ecef;
   padding: 10px 4px;
   font-size: 0.9em;
+  width: calc((100% - 80px) / 6);
+  min-width: 120px;
 }
 
 .day-name {
@@ -853,6 +869,8 @@ body {
   position: relative;
   min-height: 60px;
   padding: 2px;
+  width: calc((100% - 80px) / 6);
+  min-width: 120px;
 }
 
 /* Table-positioned class cards */
