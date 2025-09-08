@@ -1,8 +1,8 @@
 {
-  "name": "Timetable",
-  "short_name": "Timetable",
+  "name": "University Timetable",
+  "short_name": "UniTime",
   "start_url": "/index.html",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2b6cb0",
   "icons": [
