@@ -9,20 +9,20 @@ const STORAGE_KEY = 'timetable.v1'
 function getHKTDate(date = null) {
   // Create date in HKT (UTC+8)
   const baseDate = date ? new Date(date) : new Date()
-  const utcTime = baseDate.getTime() + (baseDate.getTimezoneOffset() * 60000)
-  return new Date(utcTime + (8 * 3600000)) // UTC+8 for HKT
+  return baseDate
 }
 
 function formatHKTDateString(date) {
   // Format date as YYYY-MM-DD in HKT
-  const hktDate = getHKTDate(date)
-  return hktDate.toISOString().slice(0, 10)
+  const baseDate = date ? new Date(date) : new Date()
+  const hktDateStr = baseDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Hong_Kong' })
+  return hktDateStr
 }
 
 function formatHKTDateTime(date) {
   // Format full datetime in HKT
-  const hktDate = getHKTDate(date)
-  return hktDate.toLocaleString('en-HK', { 
+  const baseDate = date ? new Date(date) : new Date()
+  return baseDate.toLocaleString('en-HK', { 
     timeZone: 'Asia/Hong_Kong',
     year: 'numeric', 
     month: '2-digit', 
@@ -35,8 +35,8 @@ function formatHKTDateTime(date) {
 
 function getCurrentHKTTime() {
   // Get current time in HKT as HH:MM format
-  const hktDate = getHKTDate()
-  return hktDate.toLocaleTimeString('en-HK', { 
+  const now = new Date()
+  return now.toLocaleTimeString('en-HK', { 
     timeZone: 'Asia/Hong_Kong',
     hour: '2-digit', 
     minute: '2-digit',
@@ -90,6 +90,39 @@ function formatClickableContact(contact) {
   
   // Otherwise, return as-is (could be other social media, etc.)
   return escapeHtml(contact)
+}
+
+// Helper function to format tutor names with title only
+function formatTutorName(fullName) {
+  if (!fullName || fullName === 'N/A') return fullName || 'N/A'
+  
+  // Extract title and first word after it
+  const titleRegex = /^(Dr\.?|Mr\.?|Ms\.?|Mrs\.?|Prof\.?|Professor)\s+(\S+)/i
+  const match = fullName.match(titleRegex)
+  
+  if (match) {
+    let title = match[1]
+    const firstName = match[2]
+    
+    // Normalize title format
+    if (title.toLowerCase().startsWith('prof')) {
+      title = 'Prof.'
+    } else if (title.toLowerCase().startsWith('dr')) {
+      title = 'Dr.'
+    } else if (title.toLowerCase().startsWith('mr')) {
+      title = 'Mr.'
+    } else if (title.toLowerCase().startsWith('ms')) {
+      title = 'Ms.'
+    } else if (title.toLowerCase().startsWith('mrs')) {
+      title = 'Mrs.'
+    }
+    
+    return `${title} ${firstName}`
+  }
+  
+  // If no title found, return first two words or just the name
+  const words = fullName.split(' ')
+  return words.length > 1 ? `${words[0]} ${words[1]}` : fullName
 }
 
 // ICS export functionality
@@ -153,7 +186,7 @@ function generateICSContent() {
         const dtEnd = formatICSDate(d, item.endTime)
         const uid = `class-${index}-${iso}@timetable-app.local`
         
-        let description = `Professor: ${item.profName || 'N/A'}`
+        let description = `Tutor: ${item.profName || 'N/A'}`
         if (item.profEmail) description += `\\nProf Email: ${item.profEmail}`
         if (item.contactEmail) description += `\\nContact Email: ${item.contactEmail}`
         if (item.groupName) {
@@ -770,8 +803,12 @@ function addLongPressListener(element, callback) {
 
 // Function to calculate time remaining until class ends
 function getClassCountdown(item) {
-  const now = getHKTDate()
-  const currentTime = now.getHours() * 60 + now.getMinutes()
+  const now = new Date()
+  
+  // Get current HKT time
+  const hktTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Hong_Kong"}))
+  const currentTime = hktTime.getHours() * 60 + hktTime.getMinutes()
+  
   const [endHour, endMin] = item.endTime.split(':').map(Number)
   const endTime = endHour * 60 + endMin
   
@@ -779,7 +816,7 @@ function getClassCountdown(item) {
   const [startHour, startMin] = item.startTime.split(':').map(Number)
   const startTime = startHour * 60 + startMin
   
-  const todayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()]
+  const todayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][hktTime.getDay()]
   const isToday = item.weekdays && item.weekdays.includes(todayName)
   const isCurrentlyHappening = isToday && currentTime >= startTime && currentTime < endTime
   
@@ -818,7 +855,7 @@ function showClassPopup(item) {
     <div class="popup-detail-row"><strong>Course:</strong> ${item.title} (${item.crn})</div>
     <div class="popup-detail-row"><strong>Location:</strong> ${item.location}</div>
     <div class="popup-detail-row"><strong>Time:</strong> ${formatTimeRange(item.startTime, item.endTime)}</div>
-    <div class="popup-detail-row"><strong>Professor:</strong> ${item.profName}</div>
+    <div class="popup-detail-row"><strong>Tutor:</strong> ${item.profName}</div>
     <div class="popup-detail-row"><strong>Days:</strong> ${item.weekdays ? item.weekdays.join(', ') : 'N/A'}</div>
     ${item.groupName ? `<div class="popup-detail-row"><strong>Group:</strong> ${item.groupName}</div>` : ''}
     ${item.groupMembers && item.groupMembers.length > 0 ? 
@@ -892,8 +929,9 @@ function render(){
   for (let h=6; h<=22; h++) hours.push((h<10? '0':'')+h+':00')
 
   // compute occurrences for visible week (this week) using HKT
-  const now = getHKTDate()
-  const weekStart = startOfWeek(now) // Monday
+  const now = new Date()
+  const hktNow = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Hong_Kong"}))
+  const weekStart = startOfWeek(hktNow) // Monday
   
   // Store current week start for comparison in refresh
   window._lastWeekStart = weekStart
@@ -916,7 +954,7 @@ function render(){
   })
 
   // current and next using HKT
-  const nowTime = now.getHours()*60 + now.getMinutes()
+  const nowTime = hktNow.getHours()*60 + hktNow.getMinutes()
   let current = null, next = null
   const occTimes = occurrences.map(o => {
     const [sh,sm] = o.item.startTime.split(':').map(Number)
@@ -932,7 +970,7 @@ function render(){
   
   for (const o of occTimes){
     const startM = o.startM
-    const isToday = formatHKTDateString(o.day) === formatHKTDateString(now)
+    const isToday = formatHKTDateString(o.day) === formatHKTDateString(hktNow)
     
     // Check if current class
     if (isToday && startM <= nowTime && o.endM > nowTime) { 
@@ -949,7 +987,7 @@ function render(){
     }
     
     // Find next class overall (today or future)
-    if (!next && (o.day > now || (isToday && o.startM > nowTime))) { 
+    if (!next && (o.day > hktNow || (isToday && o.startM > nowTime))) { 
       next = o 
     }
   }
@@ -1064,7 +1102,7 @@ function render(){
     // Time cell
     const timeCell = document.createElement('td')
     timeCell.className = 'time-cell'
-    timeCell.textContent = (h < 10 ? '0' : '') + h + ':00'
+    timeCell.textContent = (h < 10 ? '0' : '') + h
     timeRow.appendChild(timeCell)
     
     // Day cells
@@ -1262,7 +1300,7 @@ function render(){
           <div class="class-time">${formatTimeRange(item.startTime, item.endTime)}</div>
           <div class="class-location">${escapeHtml(item.location)}</div>
           ${isException ? '<div class="exception-note">No Class This Week</div>' : ''}
-          ${durationHours > 1 ? `<div class="class-meta">Prof: ${escapeHtml(item.profName)}</div>` : ''}
+          ${durationHours > 1 ? `<div class="class-meta">${escapeHtml(formatTutorName(item.profName))}</div>` : ''}
         </div>
       `
       
@@ -1390,7 +1428,7 @@ function renderMonthly(){
         eventDiv.className = 'calendar-event'
         
         // Enhanced tooltip with group info
-        let tooltipText = `${event.item.title} (${event.item.crn})\nLocation: ${event.item.location}\nTime: ${formatTimeRange(event.item.startTime, event.item.endTime)}\nProfessor: ${event.item.profName}`
+        let tooltipText = `${event.item.title} (${event.item.crn})\nLocation: ${event.item.location}\nTime: ${formatTimeRange(event.item.startTime, event.item.endTime)}\nTutor: ${event.item.profName}`
         if (event.item.profEmail) tooltipText += `\nProf Email: ${event.item.profEmail}`
         if (event.item.contactEmail) tooltipText += `\nContact Email: ${event.item.contactEmail}`
         if (event.item.groupName) {
@@ -1607,8 +1645,8 @@ function showClassDetails(item){
     <div class="detail-row"><strong>Course:</strong> ${item.title} (${item.crn})</div>
     <div class="detail-row"><strong>Location:</strong> ${item.location}</div>
     <div class="detail-row"><strong>Time:</strong> ${formatTimeRange(item.startTime, item.endTime)}</div>
-    <div class="detail-row"><strong>Professor:</strong> ${item.profName}</div>
-    <div class="detail-row"><strong>Professor Email:</strong> ${formatClickableEmail(item.profEmail)}</div>
+    <div class="detail-row"><strong>Tutor:</strong> ${item.profName}</div>
+    <div class="detail-row"><strong>Tutor Email:</strong> ${formatClickableEmail(item.profEmail)}</div>
     <div class="detail-row"><strong>Contact Email:</strong> ${formatClickableEmail(item.contactEmail)}</div>
     <div class="detail-row"><strong>Days:</strong> ${item.weekdays ? item.weekdays.join(', ') : 'N/A'}</div>
     <div class="detail-row"><strong>Period:</strong> ${item.startDate} to ${item.endDate}</div>
