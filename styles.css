@@ -194,7 +194,7 @@ body {
   right: 0;
   height: 2px;
   background-color: #3182ce;
-  z-index: 20;
+  z-index: 30;
 }
 
 .current-time-label {
@@ -208,6 +208,7 @@ body {
   border-radius: 2px;
   transform: translateY(-50%);
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  z-index: 30;
 }
 
 /* Time-positioned class cards */
@@ -1916,4 +1917,3 @@ body {
     color: #d1d5db;
   }
 }
-
